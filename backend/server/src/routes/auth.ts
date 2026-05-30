@@ -3,6 +3,7 @@ import { z } from 'zod';
 import * as argon2 from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
 import { TOTP } from 'otplib';
+// @ts-ignore 
 import QRCode from 'qrcode';
 import crypto from 'crypto';
 
