@@ -2,14 +2,23 @@
 
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY, -- UUID
+    id TEXT PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     mfa_secret TEXT,
     mfa_enabled INTEGER DEFAULT 0,
     first_name TEXT,
     last_name TEXT,
-    role TEXT DEFAULT 'user', -- 'admin', 'user'
+    role TEXT DEFAULT 'user',
+    email_verified INTEGER DEFAULT 0,
+    verification_token TEXT,
+    failed_login_attempts INTEGER DEFAULT 0,
+    lockout_until TEXT,
+    password_reset_token TEXT,
+    password_reset_expires TEXT,
+    notification_preferences TEXT DEFAULT '{"email":true,"push":true,"weekly":true}',
+    theme TEXT DEFAULT 'light',
+    privacy_settings TEXT DEFAULT '{"profileVisible":false,"shareProgress":true}',
     created_at DATETIME DEFAULT (datetime('now')),
     updated_at DATETIME DEFAULT (datetime('now'))
 );
