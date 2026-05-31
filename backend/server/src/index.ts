@@ -39,6 +39,7 @@ server.register(helmet, {
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "validator.swagger.io"],
       scriptSrc: ["'self'"],
+      connectSrc: ["'self'", "https://kinready-api.onrender.com"],
     },
   },
   hsts: env.NODE_ENV === 'production',
