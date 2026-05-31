@@ -33,20 +33,19 @@ export default async function authRoutes(fastify: FastifyInstance) {
 
     const passwordHash = await argon2.hash(body.password);
     const id = uuidv4();
-    const verificationToken = crypto.randomBytes(32).toString('hex');
 
     await fastify.db.execute({
-      sql: `INSERT INTO users (id, email, password_hash, first_name, last_name, verification_token) 
-            VALUES (?, ?, ?, ?, ?, ?)`,
-      args: [id, body.email, passwordHash, body.firstName || null, body.lastName || null, verificationToken],
+      sql: `INSERT INTO users (id, email, password_hash, first_name, last_name, email_verified) 
+            VALUES (?, ?, ?, ?, ?, 1)`,
+      args: [id, body.email, passwordHash, body.firstName || null, body.lastName || null],
     });
 
-    // Mock sending email
-    console.log(`[MOCK EMAIL] Verification link for ${body.email}: /api/v1/auth/verify?token=${verificationToken}`);
+    const token = fastify.jwt.sign({ id, email: body.email });
 
     return reply.status(201).send({ 
-      message: 'User registered. Please verify your email.',
-      userId: id 
+      token,
+      user: { id, email: body.email, firstName: body.firstName, lastName: body.lastName, role: 'user' },
+      message: 'User registered successfully.'
     });
   });
 

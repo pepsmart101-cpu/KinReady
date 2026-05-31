@@ -19,8 +19,6 @@ const Register: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const [isRegistered, setIsRegistered] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -33,37 +31,28 @@ const Register: React.FC = () => {
     setLoading(true);
 
     try {
-      await apiService.register({
+      const data = await apiService.register({
         email: formData.email,
         password: formData.password,
         firstName: formData.firstName,
         lastName: formData.lastName
       });
 
-      setIsRegistered(true);
+      login(data.token, {
+        id: data.user.id,
+        email: data.user.email,
+        first_name: data.user.firstName,
+        last_name: data.user.lastName,
+        role: data.user.role || 'user'
+      });
+
+      navigate('/onboarding');
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-
-  if (isRegistered) {
-    return (
-      <div className="max-w-md mx-auto py-12 px-4 text-center">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-sage/10 text-sage rounded-full mb-6">
-          <CheckCircle2 className="w-10 h-10" />
-        </div>
-        <h1 className="text-3xl font-serif font-bold text-navy dark:text-white mb-4">Check Your Email</h1>
-        <p className="text-warm-slate text-lg mb-8">
-          We've sent a verification link to <strong>{formData.email}</strong>. Please verify your email to continue.
-        </p>
-        <Button onClick={() => navigate('/login')} className="bg-navy text-white px-8">
-          Go to Login
-        </Button>
-      </div>
-    );
-  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
