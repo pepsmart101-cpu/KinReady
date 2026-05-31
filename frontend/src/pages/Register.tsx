@@ -9,6 +9,7 @@ import { Card } from '../components/ui/Card';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
