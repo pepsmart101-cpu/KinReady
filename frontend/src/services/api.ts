@@ -230,9 +230,12 @@ export const apiService = {
 
   // MFA
   setupMFA: async () => {
+    const token = localStorage.getItem('kinready_token');
     const response = await fetch(`${API_BASE_URL}/auth/mfa/setup`, {
       method: 'POST',
-      headers: getHeaders(),
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
     });
     if (!response.ok) throw new Error('Failed to setup MFA');
     return response.json();
