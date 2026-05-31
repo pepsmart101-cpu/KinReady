@@ -13,7 +13,7 @@ declare module 'fastify' {
 
 async function runMigrations(db: Client) {
   const __dirname = dirname(fileURLToPath(import.meta.url));
-  const migrationsPath = join(__dirname, '../../migrations');
+  const migrationsPath = join(__dirname, '../../../migrations');
   
   try {
     const schemaSql = readFileSync(join(migrationsPath, '001_initial_schema.sql'), 'utf-8');
