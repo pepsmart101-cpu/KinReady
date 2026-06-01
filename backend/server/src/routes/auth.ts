@@ -2,13 +2,12 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import * as argon2 from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
-import { TOTP } from 'otplib';
+import { authenticator } from 'otplib';
 // @ts-ignore
 import QRCode from 'qrcode';
 import crypto from 'crypto';
 
 export default async function authRoutes(fastify: FastifyInstance) {
-  const totp = new TOTP();
   const MAX_FAILED_ATTEMPTS = 5;
   const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -181,10 +180,11 @@ export default async function authRoutes(fastify: FastifyInstance) {
       if (!body.mfaToken) {
         return reply.status(200).send({ mfaRequired: true });
       }
-      const result = await totp.verify(body.mfaToken, {
+      const verified = authenticator.verify({
+        token: body.mfaToken,
         secret: user.mfa_secret,
       });
-      if (!result.valid) {
+      if (!verified) {
         return reply.status(401).send({ error: 'Invalid MFA token' });
       }
     }
@@ -297,12 +297,8 @@ export default async function authRoutes(fastify: FastifyInstance) {
 
   fastify.post('/mfa/setup', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     const userPayload = request.user as { id: string; email: string };
-    const secret = totp.generateSecret();
-    const otpauth = totp.toURI({ 
-      label: userPayload.email, 
-      issuer: 'KinReady', 
-      secret 
-    });
+    const secret = authenticator.generateSecret();
+    const otpauth = authenticator.keyuri(userPayload.email, 'KinReady', secret);
     const qrCode = await QRCode.toDataURL(otpauth);
 
     await fastify.db.execute({
@@ -330,11 +326,12 @@ export default async function authRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ error: 'MFA not set up' });
     }
 
-    const verifyResult = await totp.verify(body.token, {
+    const verifyResult = authenticator.verify({
+      token: body.token,
       secret: result.rows[0].mfa_secret as string,
     });
 
-    if (!verifyResult.valid) {
+    if (!verifyResult) {
       return reply.status(400).send({ error: 'Invalid token' });
     }
 
